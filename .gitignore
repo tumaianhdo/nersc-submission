@@ -1,0 +1,5 @@
+data/.ssh/bosco*
+data/.ssh/config
+data/.ssh/known_hosts
+data/helpers/sshproxy.sh
+data/config/nersc.conf

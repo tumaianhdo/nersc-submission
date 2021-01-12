@@ -5,9 +5,6 @@ ENV PEGASUS_VERSION "pegasus-5.0.0"
 ENV PEGASUS_VERSION_NUM "5.0.0"
 ENV BOSCO_VERSION_NUM "1.2.12"
 
-#### ENV Variables For User and Group ####
-ENV HOME "/home/pegasus"
-
 #### Update Packages ####
 RUN yum -y update
 
@@ -67,5 +64,8 @@ RUN echo "#!/bin/bash" > /opt/entrypoint.sh && \
     chmod 755 /opt/entrypoint.sh
 
 USER pegasus
+
+ENV HOME "/home/pegasus"
 WORKDIR /home/pegasus
+
 ENTRYPOINT [ "/opt/entrypoint.sh" ]

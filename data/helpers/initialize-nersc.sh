@@ -10,16 +10,20 @@ fi
 
 if [ -f $NERSC_SSH_PROXY ]; then
    if [ -z $NERSC_SSH_SCOPE ]; then
-      $NERSC_SSH_PROXY -u $NERSC_USER -o $HOME/.ssh/bosco_key.rsa
+      $NERSC_SSH_PROXY -u $NERSC_USER -o $HOME/.ssh/bosco_key.rsa > $HOME/.ssh/bosco_key.info
+      cat $HOME/.ssh/bosco_key.info
    else
-      $NERSC_SSH_PROXY -u $NERSC_USER -s $NERSC_SSH_SCOPE -o $HOME/.ssh/bosco_key.rsa
+      $NERSC_SSH_PROXY -u $NERSC_USER -s $NERSC_SSH_SCOPE -o $HOME/.ssh/bosco_key.rsa > $HOME/.ssh/bosco_key.info
+      cat $HOME/.ssh/bosco_key.info
    fi
 else
    sftp $NERSC_USER@cori.nersc.gov:/project/projectdirs/mfa/NERSC-MFA/sshproxy.sh $NERSC_SSH_PROXY
    if [ -z $NERSC_SSH_SCOPE ]; then
-      $NERSC_SSH_PROXY -u $NERSC_USER -o $HOME/.ssh/bosco_key.rsa
+      $NERSC_SSH_PROXY -u $NERSC_USER -o $HOME/.ssh/bosco_key.rsa > $HOME/.ssh/bosco_key.info
+      cat $HOME/.ssh/bosco_key.info
    else
-      $NERSC_SSH_PROXY -u $NERSC_USER -s $NERSC_SSH_SCOPE -o $HOME/.ssh/bosco_key.rsa
+      $NERSC_SSH_PROXY -u $NERSC_USER -s $NERSC_SSH_SCOPE -o $HOME/.ssh/bosco_key.rsa > $HOME/.ssh/bosco_key.info
+      cat $HOME/.ssh/bosco_key.info
    fi
 fi
 
