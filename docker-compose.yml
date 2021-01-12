@@ -1,0 +1,13 @@
+version: "3.5"
+services:
+   pegasus-nersc:
+      image: pegasus/nersc-remote-submission:latest
+      container_name: pegasus-nersc
+      user: pegasus
+      restart: always
+      volumes:
+         - ./data/.ssh:/home/pegasus/.ssh:rw
+         - ./data/.bashrc:/home/pegasus/.bashrc:ro
+         - ./data/config:/home/pegasus/config:ro
+         - ./data/helpers:/home/pegasus/helpers:rw
+         - ./data/workflows:/home/pegasus/workflows:rw
