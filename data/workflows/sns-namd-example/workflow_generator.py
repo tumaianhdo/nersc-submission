@@ -158,7 +158,8 @@ class DiamondWorkflow():
             eq_vel = File("equilibrate_%s.restart.vel" % temperature)
 
             # Add a equilibrate job
-            equilibrate_job = Job("namd", node_label="namd_eq_%s" % temperature)\
+            #equilibrate_job = Job("namd", node_label="namd_eq_%s" % temperature)\
+            equilibrate_job = Job("namd")\
                             .add_args(eq_conf)\
                             .add_inputs(eq_conf, structure, coordinates, parameters, extended_system)\
                             .add_outputs(eq_coord, eq_xsc, eq_vel, stage_out=False, register_replica=False)
@@ -167,7 +168,8 @@ class DiamondWorkflow():
             prod_dcd = File("production_%s.dcd" % temperature)
             
             # Add a production job
-            production_job = Job("namd", node_label="namd_prod_%s" % temperature)\
+            #production_job = Job("namd", node_label="namd_prod_%s" % temperature)\
+            production_job = Job("namd")\
                             .add_args(prod_conf)\
                             .add_inputs(prod_conf, structure, coordinates, parameters, eq_coord, eq_xsc, eq_vel)\
                             .add_outputs(prod_dcd, stage_out=True, register_replica=True)
