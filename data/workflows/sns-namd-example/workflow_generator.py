@@ -132,14 +132,14 @@ class DiamondWorkflow():
     def create_replica_catalog(self):
         self.rc = ReplicaCatalog()
 
-        # Add f.a replica
-        self.rc.add_replica("local", "Q42.psf", os.path.join(self.wf_dir, "input", "Q42.psf"))
-        self.rc.add_replica("local", "crd.md18_vmd_autopsf.pdb", os.path.join(self.wf_dir, "input", "crd.md18_vmd_autopsf.pdb"))
-        self.rc.add_replica("local", "par_all27_prot_lipid.inp", os.path.join(self.wf_dir, "input", "par_all27_prot_lipid.inp"))
-        self.rc.add_replica("local", "init.xsc", os.path.join(self.wf_dir, "input", "init.xsc"))
+        github_location = "https://raw.githubusercontent.com/papajim/pegasus-nersc-bosco/main/data/workflows/sns-namd-example/input"
+        self.rc.add_replica("GitHub", "Q42.psf", os.path.join(github_location, "Q42.psf"))
+        self.rc.add_replica("GitHub", "crd.md18_vmd_autopsf.pdb", os.path.join(github_location, "crd.md18_vmd_autopsf.pdb"))
+        self.rc.add_replica("GitHub", "par_all27_prot_lipid.inp", os.path.join(github_location, "par_all27_prot_lipid.inp"))
+        self.rc.add_replica("GitHub", "init.xsc", os.path.join(github_location, "init.xsc"))
         for temperature in self.temperatures:
-            self.rc.add_replica("local", ("equilibrate_%s.conf" % temperature), os.path.join(self.wf_dir, "input", ("equilibrate_%s.conf" % temperature)))
-            self.rc.add_replica("local", ("production_%s.conf" % temperature), os.path.join(self.wf_dir, "input", ("production_%s.conf" % temperature)))
+            self.rc.add_replica("GitHub", ("equilibrate_%s.conf" % temperature), os.path.join(github_location, ("equilibrate_%s.conf" % temperature)))
+            self.rc.add_replica("GitHub", ("production_%s.conf" % temperature), os.path.join(github_location, ("production_%s.conf" % temperature)))
 
     
     # --- Create Workflow ----------------------------------------------------------
