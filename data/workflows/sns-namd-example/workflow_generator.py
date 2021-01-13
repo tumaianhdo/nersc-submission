@@ -67,7 +67,7 @@ class DiamondWorkflow():
                             .add_file_servers(FileServer("file://" + local_storage_dir, Operation.ALL))
                     )
 
-        nersc = Site("nersc")\
+        cori = Site("cori")\
                     .add_grids(
                         Grid(grid_type=Grid.BATCH, scheduler_type=Scheduler.SLURM, contact="${NERSC_USER}@cori.nersc.gov", job_type=SupportedJobs.COMPUTE),
                         Grid(grid_type=Grid.BATCH, scheduler_type=Scheduler.SLURM, contact="${NERSC_USER}@cori.nersc.gov", job_type=SupportedJobs.AUXILLARY)
@@ -85,9 +85,9 @@ class DiamondWorkflow():
                         project="${NERSC_PROJECT}",
                         runtime=300
                     )\
-                    .add_env(key="PEGASUS_HOME", value="${PEGASUS_NERSC_HOME}")
+                    .add_env(key="PEGASUS_HOME", value="${NERSC_PEGASUS_HOME}")
         
-        self.sc.add_sites(local, nersc)
+        self.sc.add_sites(local, cori)
                         
 
 
@@ -96,28 +96,28 @@ class DiamondWorkflow():
         self.tc = TransformationCatalog()
 
         # Add the namd executable
-        pegasus_transfer = Transformation("transfer", namespace="pegasus", site="nersc", pfn="$PEGASUS_HOME/bin/pegasus-transfer", is_stageable=False)\
+        pegasus_transfer = Transformation("transfer", namespace="pegasus", site="cori", pfn="$PEGASUS_HOME/bin/pegasus-transfer", is_stageable=False)\
                                 .add_pegasus_profile(
                                     queue="@escori",
                                     runtime="300",
                                     glite_arguments="--qos xfer --licenses=SCRATCH"
                                 )
 
-        pegasus_dirmanager = Transformation("dirmanager", namespace="pegasus", site="nersc", pfn="$PEGASUS_HOME/bin/pegasus-transfer", is_stageable=False)\
+        pegasus_dirmanager = Transformation("dirmanager", namespace="pegasus", site="cori", pfn="$PEGASUS_HOME/bin/pegasus-transfer", is_stageable=False)\
                                 .add_pegasus_profile(
                                     queue="@escori",
                                     runtime="300",
                                     glite_arguments="--qos xfer --licenses=SCRATCH"
                                 )
 
-        pegasus_cleanup = Transformation("cleanup", namespace="pegasus", site="nersc", pfn="$PEGASUS_HOME/bin/pegasus-transfer", is_stageable=False)\
+        pegasus_cleanup = Transformation("cleanup", namespace="pegasus", site="cori", pfn="$PEGASUS_HOME/bin/pegasus-transfer", is_stageable=False)\
                                 .add_pegasus_profile(
                                     queue="@escori",
                                     runtime="300",
                                     glite_arguments="--qos xfer --licenses=SCRATCH"
                                 )
 
-        namd = Transformation("namd", site="nersc", pfn=os.path.join(self.wf_dir, "/usr/common/software/namd/2.13/haswell/namd2"), is_stageable=False)\
+        namd = Transformation("namd", site="cori", pfn=os.path.join(self.wf_dir, "/usr/common/software/namd/2.13/haswell/namd2"), is_stageable=False)\
                     .add_pegasus_profile(
                         cores="32",
                         runtime="1200",
