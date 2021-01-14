@@ -8,6 +8,7 @@ services:
       volumes:
          - ./data/.ssh:/home/pegasus/.ssh:rw
          - ./data/.bashrc:/home/pegasus/.bashrc:ro
+         - ./data/.pegasus:/home/pegasus/.pegasus:rw
          - ./data/config:/home/pegasus/config:ro
          - ./data/helpers:/home/pegasus/helpers:rw
          - ./data/workflows:/home/pegasus/workflows:rw
