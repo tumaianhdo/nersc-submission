@@ -5,3 +5,4 @@ data/helpers/sshproxy.sh
 data/config/nersc.conf
 data/workflows/sns-namd-example/pegasus.properties
 data/workflows/sns-namd-example/*.yml
+data/workflows/sns-namd-example/submit

@@ -13,8 +13,12 @@ RUN yum -y install which java-1.8.0-openjdk-devel sudo mysql-devel postgresql-de
 
 RUN pip3 install --upgrade pip && pip3 install pyyaml gitpython
 
-#### Add pegasus user ####
-RUN useradd -s /bin/bash/ -m pegasus && chown -R pegasus:pegasus /home/pegasus
+#### Add pegasus user and vim config ####
+COPY vim.tar.gz /opt/vim.tar.gz
+RUN useradd -s /bin/bash/ -m pegasus && \
+    tar -C /home/pegasus -xzvf /opt/vim.tar.gz && \
+    rm /opt/vim.tar.gz && \
+    chown -R pegasus:pegasus /home/pegasus
 
 ENV LC_ALL "en_US.utf-8"
 ENV LANG "en_US.utf-8"
@@ -63,6 +67,7 @@ RUN echo "#!/bin/bash" > /opt/entrypoint.sh && \
     chown pegasus:pegasus /opt/entrypoint.sh && \
     chmod 755 /opt/entrypoint.sh
 
+#### Switch to pegasus user ####
 USER pegasus
 
 ENV HOME "/home/pegasus"

@@ -95,7 +95,7 @@ class DiamondWorkflow():
     def create_transformation_catalog(self):
         self.tc = TransformationCatalog()
 
-        # Add the namd executable
+        # Add pegasus functions to be run on the xfer queue
         pegasus_transfer = Transformation("transfer", namespace="pegasus", site="cori", pfn="$PEGASUS_HOME/bin/pegasus-transfer", is_stageable=False)\
                                 .add_pegasus_profile(
                                     queue="@escori",
@@ -116,16 +116,26 @@ class DiamondWorkflow():
                                     runtime="300",
                                     glite_arguments="--qos xfer --licenses=SCRATCH"
                                 )
+        
+        system_chmod = Transformation("chmod", namespace="system", site="cori", pfn="/usr/bin/chmod", is_stageable=False)\
+                                .add_pegasus_profile(
+                                    queue="@escori",
+                                    runtime="60",
+                                    glite_arguments="--qos xfer --licenses=SCRATCH"
+                                )
 
-        namd = Transformation("namd", site="cori", pfn=os.path.join(self.wf_dir, "/usr/common/software/namd/2.13/haswell/namd2"), is_stageable=False)\
+        # Add the namd executable
+        namd = Transformation("namd", site="cori", pfn="https://raw.githubusercontent.com/papajim/pegasus-nersc-bosco/main/data/workflows/sns-namd-example/bin/namd_wrapper.sh", is_stageable=True)\
                     .add_pegasus_profile(
                         cores="32",
                         runtime="1200",
+                        grid_start="NoGridStart",
                         exitcode_success_msg="End of program",
-                        glite_arguments="--qos debug --licenses=SCRATCH"
-                    )
+                        glite_arguments="--qos debug --constraint=haswell --licenses=SCRATCH"
+                    )\
+                    .add_env(key="PEGASUS_CORES", value="32")
         
-        self.tc.add_transformations(pegasus_transfer, pegasus_dirmanager, pegasus_cleanup, namd)
+        self.tc.add_transformations(pegasus_transfer, pegasus_dirmanager, pegasus_cleanup, system_chmod, namd)
 
 
     # --- Replica Catalog ----------------------------------------------------------

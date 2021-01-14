@@ -12,7 +12,6 @@ WORKFLOW_FILE=$1
 pegasus-plan --conf pegasus.properties \
     --dir submit \
     --sites cori \
-    --staging-site cori \
     --output-site cori \
     --cleanup leaf \
     --force \
