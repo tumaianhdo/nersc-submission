@@ -30,9 +30,9 @@ Step 1: Update data/config/nersc.conf
 In data/config/nersc.conf update the section "ENV Variables For NERSC" with your information.
 
 More specifically replace:
-- _NERSC\_SSH\_SCOPE_, with the ssh scope specified for your account by the NERSC admins (if any, otherwise leave empty)
-- _NERSC\_PROJECT_, with your project name at NERSC
-- _NERSC\_USER_, with your user name at NERSC
+- **NERSC\_SSH\_SCOPE**, with the ssh scope specified for your account by the NERSC admins (if any, otherwise leave empty)
+- **NERSC\_PROJECT**, with your project name at NERSC
+- **NERSC\_USER**, with your user name at NERSC
 
 Step 2: Start the Docker container
 ----------------------------------
