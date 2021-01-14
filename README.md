@@ -8,17 +8,17 @@ New versions of the container will be tagged with the version of Pegasus install
 
 ## Basic scripts and files
 
-_Docker/Dockerfile_. Dockerfile used to prepare a container with Pegasus and HTCondor BOSCO, ommiting Pegasus' R support.
+**Docker/Dockerfile** Dockerfile used to prepare a container with Pegasus and HTCondor BOSCO, ommiting Pegasus' R support.
 
-_docker-compose.yml_. A Docker Compose file to automate the instantiation of the container.
+**docker-compose.yml** A Docker Compose file to automate the instantiation of the container.
 
-_data/config/nersc.conf_. Contains envuironmental variables that are relevant for your account at NERSC.
+**data/config/nersc.conf** Contains envuironmental variables that are relevant for your account at NERSC.
 
-_data/helpers/initialize-nersc.sh_. This script initializes your NERSC home to accept jobs using the HTCondor BOSCO method. It retrieves an SSH key for your account and installs the BOSCO binaries under your account.
+**data/helpers/initialize-nersc.sh** This script initializes your NERSC home to accept jobs using the HTCondor BOSCO method. It retrieves an SSH key for your account and installs the BOSCO binaries under your account.
 
-_data/helpers/renew-nersc-key.sh_. The retrieved SSH key lasts for a limited time and this script can be used to renew it.
+**data/helpers/renew-nersc-key.sh** The retrieved SSH key lasts for a limited time and this script can be used to renew it.
 
-_data/workflows_. This fodler contains Pegasus 5.0 workflow examples that can be submitted directly to NERSC.
+**data/workflows** This fodler contains Pegasus 5.0 workflow examples that can be submitted directly to NERSC. You can use this folder to create your workflows too.
 
 ## Prerequisites
 
