@@ -98,7 +98,7 @@ class DiamondWorkflow():
         # Add shifter image
         namd_image = Container("namd_image", Container.SHIFTER, image="shifter:///papajim/namd_image:latest", image_site="cori")
 
-	# Add pegasus functions to be run on the xfer queue
+        # Add pegasus functions to be run on the xfer queue
         pegasus_transfer = Transformation("transfer", namespace="pegasus", site="cori", pfn="$PEGASUS_HOME/bin/pegasus-transfer", is_stageable=False)\
                                 .add_pegasus_profile(
                                     queue="@escori",
@@ -119,6 +119,13 @@ class DiamondWorkflow():
                                     runtime="300",
                                     glite_arguments="--qos xfer --licenses=SCRATCH"
                                 )
+        
+        system_chmod = Transformation("chmod", namespace="system", site="cori", pfn="/usr/bin/chmod", is_stageable=False)\
+                                .add_pegasus_profile(
+                                    queue="@escori",
+                                    runtime="60",
+                                    glite_arguments="--qos xfer --licenses=SCRATCH"
+                                )
 
         # Add the namd executable
         namd = Transformation("namd", site="cori", pfn="/opt/NAMD_2.12_Linux-x86_64-multicore/namd2", is_stageable=False, container=namd_image)\
@@ -130,7 +137,7 @@ class DiamondWorkflow():
                     )
         
         self.tc.add_containers(namd_image)
-        self.tc.add_transformations(pegasus_transfer, pegasus_dirmanager, pegasus_cleanup, namd)
+        self.tc.add_transformations(pegasus_transfer, pegasus_dirmanager, pegasus_cleanup, system_chmod, namd)
 
 
     # --- Replica Catalog ----------------------------------------------------------

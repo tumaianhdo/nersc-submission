@@ -131,7 +131,6 @@ class DiamondWorkflow():
                     .add_pegasus_profile(
                         cores="32",
                         runtime="1200",
-                        grid_start="NoGridStart",
                         exitcode_success_msg="End of program",
                         glite_arguments="--qos debug --constraint=haswell --licenses=SCRATCH"
                     )\
