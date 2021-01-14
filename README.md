@@ -1,7 +1,10 @@
 # A Docker recipe that runs Pegasus and HTCondor and targets NERSC as the execution site
 
-This project prepares a Docker container that can run on your local machine and submit Pegasus workflows _remotely_, using HTCondor BOSCO, to NERSC's computing systems.
-The container can be found at https://hub.docker.com/r/pegasus/nersc-remote-submission and new versions of the container will be tagged with the version of Pegasus they are coming with. (e.g., pegasus/nersc-remote-submission:pegasus-5.0.0)
+This project prepares a Docker container that can run on your local machine and submit Pegasus workflows **remotely**, using HTCondor BOSCO, to NERSC's computing systems.
+
+The container can be found at https://hub.docker.com/r/pegasus/nersc-remote-submission.
+
+New versions of the container will be tagged with the version of Pegasus installed in the image (e.g., pegasus/nersc-remote-submission:pegasus-5.0.0).
 
 ## Basic scripts and files
 
@@ -31,8 +34,8 @@ More specifically replace:
 - _NERSC\_PROJECT_, with your project name at NERSC
 - _NERSC\_USER_, with your user name at NERSC
 
-Step 2: Run docker-compose
----------------------------
+Step 2: Start the Docker container
+----------------------------------
 
 ```
 docker-compose up -d
@@ -64,7 +67,7 @@ Step 5: Run a workflow
 
 ```
 cd /home/pegasus/workflows/sns-namd-example
-./workflow\_generator\_shifter\_remote\_staging.py
+./workflow_generator_shifter_remote_staging.py
 ./plan.sh workflow.yml
 ```
 
