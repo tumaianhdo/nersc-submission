@@ -125,7 +125,7 @@ class DiamondWorkflow():
                                 )
 
         # Add the namd executable
-        namd = Transformation("namd", site="cori", pfn="https://raw.githubusercontent.com/papajim/pegasus-nersc-bosco/main/data/workflows/sns-namd-example/bin/namd_wrapper.sh", is_stageable=True)\
+        namd = Transformation("namd", site="cori", pfn="https://raw.githubusercontent.com/pegasus-isi/pegasus-nersc-bosco/main/data/workflows/sns-namd-example/bin/namd_wrapper.sh", is_stageable=True)\
                     .add_pegasus_profile(
                         cores="32",
                         runtime="1200",
@@ -141,7 +141,7 @@ class DiamondWorkflow():
     def create_replica_catalog(self):
         self.rc = ReplicaCatalog()
 
-        github_location = "https://raw.githubusercontent.com/papajim/pegasus-nersc-bosco/main/data/workflows/sns-namd-example/input"
+        github_location = "https://raw.githubusercontent.com/pegasus-isi/pegasus-nersc-bosco/main/data/workflows/sns-namd-example/input"
         self.rc.add_replica("GitHub", "Q42.psf", os.path.join(github_location, "Q42.psf"))
         self.rc.add_replica("GitHub", "crd.md18_vmd_autopsf.pdb", os.path.join(github_location, "crd.md18_vmd_autopsf.pdb"))
         self.rc.add_replica("GitHub", "par_all27_prot_lipid.inp", os.path.join(github_location, "par_all27_prot_lipid.inp"))
