@@ -33,6 +33,7 @@ More specifically replace:
 - **NERSC\_SSH\_SCOPE**, with the ssh scope specified for your account by the NERSC admins (if any, otherwise leave empty)
 - **NERSC\_PROJECT**, with your project name at NERSC
 - **NERSC\_USER**, with your user name at NERSC
+- **NERSC\_USER\_HOME**, with your user home directory at NERSC
 
 Step 2: Start the Docker container
 ----------------------------------
