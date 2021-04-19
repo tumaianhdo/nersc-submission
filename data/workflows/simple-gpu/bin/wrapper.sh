@@ -17,6 +17,7 @@ export CRAYPE_LINK_TYPE=dynamic
 old_dir=`pwd`
 cd $PEGASUS_SCRATCH_DIR
 
-srun -G ${PEGASUS_NUM_WORKERS} -n ${PEGASUS_NUM_WORKERS} --cpus-per-task=2 --gpus-per-task=1 --gpu-bind=map_gpu:0,1 --hint=nomultithread python test.py > output
+echo "$(which python)" >> output
+srun -G ${PEGASUS_NUM_WORKERS} -n ${PEGASUS_NUM_WORKERS} --cpus-per-task=2 --gpus-per-task=1 --gpu-bind=map_gpu:0,1 --hint=nomultithread python test.py >> output
 
 cd $old_dir
