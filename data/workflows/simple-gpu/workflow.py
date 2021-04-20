@@ -75,20 +75,26 @@ if __name__ == '__main__':
 							)
 	wrapper = Transformation("wrapper", site="cori", pfn="https://raw.githubusercontent.com/tumaianhdo/nersc-submission/main/data/workflows/simple-gpu/bin/wrapper.sh", is_stageable=True)\
 					.add_pegasus_profile(
-						cores="2",
+						# cores="2",
+						# ppn=""
 						runtime="1200",
 						queue="@escori",
 						# exitcode_success_msg="End of program",
-						glite_arguments="--constraint=gpu --gpus=2 --gpus-per-task=1 --hint=nomultithread --account=m2187"
+						glite_arguments="--constraint=gpu --gpus=2 --ntasks=2 --cpus-per-task=2 --gpus-per-task=1 --hint=nomultithread"
 					)\
-					.add_env(key="PEGASUS_CORES", value="2")
+					.add_env(key="PEGASUS_NUM_WORKERS", value="2")
 	tc.add_transformations(pegasus_transfer, pegasus_dirmanager, pegasus_cleanup, system_chmod, wrapper)
 
 	rc = ReplicaCatalog()
+	github_location = "https://raw.githubusercontent.com/tumaianhdo/nersc-submission/main/data/workflows/simple-gpu/input"
+	rc.add_replica("GitHub", "test.py", os.path.join(github_location, "test.py"))
 
-	wf = Workflow("simple", infer_dependencies=True)
+	wf = Workflow("simple-gpu", infer_dependencies=True)
+	test_py = File("test.py")
 	out_file = File("output")
-	wrapper_job = Job("wrapper").add_outputs(out_file, stage_out=True, register_replica=True)
+	wrapper_job = Job("wrapper")\
+						.add_inputs(test_py)\
+						.add_outputs(out_file, stage_out=True, register_replica=True)
 	wf.add_jobs(wrapper_job)
 
 	props.write()
