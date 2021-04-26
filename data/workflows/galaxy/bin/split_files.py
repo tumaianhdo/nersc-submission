@@ -10,8 +10,7 @@ import argparse
 from os import path
 
 
-INPUT_DIR  = "full_galaxy_dataset/"
-OUTPUT_DIR = INPUT_DIR
+
 
 
 
@@ -19,11 +18,11 @@ OUTPUT_DIR = INPUT_DIR
 def parse_args(args):
     parser = argparse.ArgumentParser(description="Enter description here")
     parser.add_argument(
-        "-i","--input_dir",default="full_galaxy_dataset_raw/",
+        "-i","--input_dir",default=".",
         help="directory with data"
         )
     parser.add_argument(
-        "-o","--output_dir",default="full_galaxy_dataset/",
+        "-o","--output_dir",default=".",
         help="directory for outputs"
         )
     parser.add_argument(
@@ -62,11 +61,11 @@ def main():
     if not path.exists(output_dir):
         os.makedirs(output_dir)
 
-    all_images = glob.glob(input_dir + "*.jpg")
+    all_images       = glob.glob(input_dir + "*.jpg")
     train, val, test = split_data_filenames(all_images,seed)
     pf_train = add_prefix(train, "train",output_dir)
-    pf_val = add_prefix(val, "val",output_dir)
-    pf_test = add_prefix(test, "test",output_dir)
+    pf_val   = add_prefix(val, "val",output_dir)
+    pf_test  = add_prefix(test, "test",output_dir)
 
 
 
