@@ -100,25 +100,51 @@ def create_output_file_names(class_str, img_per_class):
 	return output_files
 
 
-
-
-
-
-
-
 def run_workflow(DATA_PATH):
 
+	# SITE CATALOG
+	#---------------------------------------------------------------------------------------------------------
+	sc = SiteCatalog()
+	cori = Site("cori")\
+				.add_grids(
+					Grid(grid_type=Grid.BATCH, scheduler_type=Scheduler.SLURM, contact="${NERSC_USER}@cori.nersc.gov", job_type=SupportedJobs.COMPUTE),
+					Grid(grid_type=Grid.BATCH, scheduler_type=Scheduler.SLURM, contact="${NERSC_USER}@cori.nersc.gov", job_type=SupportedJobs.AUXILLARY)
+				)\
+				.add_directories(
+					Directory(Directory.SHARED_SCRATCH, "/global/cscratch1/sd/${NERSC_USER}/pegasus/scratch")
+						.add_file_servers(FileServer("file:///global/cscratch1/sd/${NERSC_USER}/pegasus/scratch", Operation.ALL)),
+					Directory(Directory.SHARED_STORAGE, "/global/cscratch1/sd/${NERSC_USER}/pegasus/storage")
+						.add_file_servers(FileServer("file:///global/cscratch1/sd/${NERSC_USER}/pegasus/storage", Operation.ALL))
+				)\
+				.add_pegasus_profile(
+					style="ssh",
+					data_configuration="sharedfs",
+					change_dir="true",
+					project="${NERSC_PROJECT}",
+					runtime=300
+				)\
+				.add_env(key="PEGASUS_HOME", value="${NERSC_PEGASUS_HOME}")
+	
+	sc.add_sites(cori)
+	sc.write()
 
 	### ADD INPUT FILES TO REPILCA CATALOG
 	#-------------------------------------------------------------------------------------------------------
 	rc = ReplicaCatalog()
-
+	github_location = "https://raw.githubusercontent.com/tumaianhdo/nersc-submission/main/data/workflows/galaxy"
 
 	full_galaxy_images = glob.glob(DATA_PATH + "*.jpg")
-	input_images       = get_files(full_galaxy_images,rc)
-	
+	input_images  = []
+	for image_path in full_galaxy_images:
+		image_file = image_path.split("/")[-1]
+		input_images.append(File(image_file))
+		rc.add_replica("GitHub", image_file,  os.path.join(github_location, image_path))
+		# rc.add_replica("local", image_file,  os.path.join(os.getcwd(), image_path))
+	# input_images = get_files(full_galaxy_images,rc)
+
 	metadata_file      = 'training_solutions_rev1.csv'
-	rc.add_replica("local", metadata_file,  os.path.join(os.getcwd(), metadata_file))
+	rc.add_replica("GitHub", metadata_file,  os.path.join(github_location, metadata_file))
+	# rc.add_replica("local", metadata_file,  os.path.join(os.getcwd(), metadata_file))
 
 	dataset_class_0 = create_output_file_names(0,MAX_IMG_0)
 	dataset_class_1 = create_output_file_names(1,MAX_IMG_1)
@@ -138,29 +164,45 @@ def run_workflow(DATA_PATH):
 	output_images = pf_train + pf_val + pf_test
 	output_files = [File(i) for i in output_images]  
 
-
 	# ADDITIONAL PYTHON SCRIPS NEEDED BY TUNE_MODEL
 	#-------------------------------------------------------------------------------------------------------
-	data_loader_fn = "data_loader.py"
-	data_loader_file = File(data_loader_fn )
-	rc.add_replica("local", data_loader_fn, os.path.join(os.getcwd(), "bin/" + data_loader_fn ))
+	data_loader_fn = 'data_loader.py'
+	data_loader_file = File(data_loader_fn)
+	rc.add_replica("GitHub", data_loader_fn, os.path.join(github_location, "bin", data_loader_fn))
+	# rc.add_replica("local", data_loader_fn, os.path.join(os.getcwd(), "bin/" + data_loader_fn ))
 
-	model_selction_fn = "model_selection.py"
-	model_selction_file = File(model_selction_fn )
-	rc.add_replica("local", model_selction_fn, os.path.join(os.getcwd(),"bin/" + model_selction_fn ))
-
+	model_selection_fn = 'model_selection.py'
+	model_selection_file = File(model_selection_fn)
+	rc.add_replica("GitHub", model_selection_fn, os.path.join(github_location, "bin", model_selection_fn))
+	# rc.add_replica("local", model_selction_fn, os.path.join(os.getcwd(),"bin/" + model_selction_fn ))
 
 	# FILES FOR vgg16_hpo.py VGG 16
 	#--------------------------------------------------------------------------------------------------------
-	vgg16_pkl = create_pkl("hpo_galaxy_vgg16.pkl")
+	# vgg16_pkl = create_pkl("hpo_galaxy_vgg16.pkl")
+	vgg16_pkl = 'hpo_galaxy_vgg16.pkl'
 	vgg16_pkl_file = File(vgg16_pkl)
-	rc.add_replica("local", vgg16_pkl, os.path.join(os.getcwd(), vgg16_pkl))    
+	rc.add_replica("GitHub", vgg16_pkl, os.path.join(github_location, vgg16_pkl))   
+	# rc.add_replica("local", vgg16_pkl, os.path.join(os.getcwd(), vgg16_pkl))    
 
 	# FILES FOR train_model.py 
 	#--------------------------------------------------------------------------------------------------------
-	checkpoint_vgg16_pkl = create_pkl("checkpoint_vgg16.pkl")
+	# checkpoint_vgg16_pkl = create_pkl("checkpoint_vgg16.pkl")
+	checkpoint_vgg16_pkl = 'checkpoint_vgg16.pkl'
 	checkpoint_vgg16_pkl_file = File(checkpoint_vgg16_pkl)
-	rc.add_replica("local",checkpoint_vgg16_pkl, os.path.join(os.getcwd(), checkpoint_vgg16_pkl))
+	rc.add_replica("GitHub", checkpoint_vgg16_pkl, os.path.join(github_location, checkpoint_vgg16_pkl))
+	# rc.add_replica("local",checkpoint_vgg16_pkl, os.path.join(os.getcwd(), checkpoint_vgg16_pkl))
+
+	create_dataset_fn = 'create_dataset.py'
+	create_dataset_file = File(create_dataset_fn)
+	rc.add_replica("GitHub", create_dataset_fn, os.path.join(github_location, "bin", create_dataset_fn))
+
+	preprocess_images_fn = 'preprocess_resize.py'
+	preprocess_images_file = File(preprocess_images_fn)
+	rc.add_replica("GitHub", preprocess_images_fn, os.path.join(github_location, "bin", preprocess_images_fn))
+
+	augment_images_fn = 'preprocess_augment.py'
+	augment_images_file = File(augment_images_fn)
+	rc.add_replica("GitHub", augment_images_fn, os.path.join(github_location, "bin", augment_images_fn))
 
 	rc.write()
 
@@ -168,10 +210,44 @@ def run_workflow(DATA_PATH):
 	#---------------------------------------------------------------------------------------------------------
 	tc = TransformationCatalog()
 
+	# Pegasus transfer prerequisites
+	pegasus_transfer = Transformation("transfer", namespace="pegasus", site="cori", pfn="$PEGASUS_HOME/bin/pegasus-transfer", is_stageable=False)\
+							.add_pegasus_profile(
+								queue="@escori",
+								runtime="300",
+								glite_arguments="--qos xfer --licenses=SCRATCH"
+							)					
+	pegasus_dirmanager = Transformation("dirmanager", namespace="pegasus", site="cori", pfn="$PEGASUS_HOME/bin/pegasus-transfer", is_stageable=False)\
+							.add_pegasus_profile(
+								queue="@escori",
+								runtime="300",
+								glite_arguments="--qos xfer --licenses=SCRATCH"
+							)
+	pegasus_cleanup = Transformation("cleanup", namespace="pegasus", site="cori", pfn="$PEGASUS_HOME/bin/pegasus-transfer", is_stageable=False)\
+							.add_pegasus_profile(
+								queue="@escori",
+								runtime="300",
+								glite_arguments="--qos xfer --licenses=SCRATCH"
+							)
+	system_chmod = Transformation("chmod", namespace="system", site="cori", pfn="/usr/bin/chmod", is_stageable=False)\
+							.add_pegasus_profile(
+								queue="@escori",
+								runtime="60",
+								glite_arguments="--qos xfer --licenses=SCRATCH"
+							)
+
+	wrapper = Transformation("wrapper", site="cori", pfn="https://raw.githubusercontent.com/tumaianhdo/nersc-submission/main/data/workflows/galaxy/bin/wrapper.sh", is_stageable=True)\
+							.add_pegasus_profile(
+								cores="1",
+								runtime="1200",
+								# exitcode_success_msg="End of program",
+								glite_arguments="--qos debug --constraint=haswell --licenses=SCRATCH"
+							)
+
 	# Data Aqusition: Create Dataset
-	create_dataset = Transformation("create_dataset",site="local",
-									pfn = str(Path(".").parent.resolve() / "bin/create_dataset.py"), 
-									is_stageable= True)  
+	# create_dataset = Transformation("create_dataset",site="local",
+	# 								pfn = str(Path(".").parent.resolve() / "bin/create_dataset.py"), 
+	# 								is_stageable= True)  
 
 	# # Data preprocessing part 1: image resize
 	# preprocess_images = Transformation("preprocess_images",site="local",
@@ -198,7 +274,7 @@ def run_workflow(DATA_PATH):
 	# 								pfn = str(Path(".").parent.resolve() / "bin/eval_model_vgg16.py"), 
 	# 								is_stageable= True)
 
-	tc.add_transformations(create_dataset)
+	tc.add_transformations(pegasus_transfer, pegasus_dirmanager, pegasus_cleanup, system_chmod, wrapper)
 	# tc.add_transformations(
 	# 	create_dataset,
 	# 	preprocess_images,
@@ -213,34 +289,33 @@ def run_workflow(DATA_PATH):
 	#---------------------------------------------------------------------------------------------------------
 	wf = Workflow('Galaxy-Classification-Workflow')
 
-	job_create_dataset = Job(create_dataset)\
-						.add_args("-seed {}".format(SEED))\
-						.add_inputs(*input_images, File(metadata_file))\
-						.add_outputs(*output_files )
+	job_create_dataset = Job(wrapper)\
+						.add_args("create_dataset.py -seed {}".format(SEED))\
+						.add_inputs(*input_images, File(metadata_file), create_dataset_file)\
+						.add_outputs(*output_files)
 
-	# job_preprocess_images = [Job(preprocess_images) for i in range(NUM_WORKERS)]
-	# resized_images = split_preprocess_jobs(job_preprocess_images, output_files, "_proc")
+	job_preprocess_images = [Job(wrapper).add_args(preprocess_images_file).add_inputs(preprocess_images_file) for i in range(NUM_WORKERS)]
+	resized_images = split_preprocess_jobs(job_preprocess_images, output_files, "_proc")
 
-	# train_class_2         = "train_class_2"
-	# train_files_class_2   = [i for i in output_images if train_class_2 in i]
-	# input_aug_class_2     = [ File(file.split("/")[-1].split(".")[0] + "_proc.jpg") for file in train_files_class_2 ]
-	# output_aug_class_2    = add_augmented_images("class_2", NUM_CLASS_2, 4000)
+	train_class_2         = "train_class_2"
+	train_files_class_2   = [i for i in output_images if train_class_2 in i]
+	input_aug_class_2     = [ File(file.split("/")[-1].split(".")[0] + "_proc.jpg") for file in train_files_class_2 ]
+	output_aug_class_2    = add_augmented_images("class_2", NUM_CLASS_2, 4000)
 	
-	# train_class_3         = "train_class_3"
-	# train_files_class_3   = [i for i in output_images if train_class_3 in i]
-	# input_aug_class_3     = [ File(file.split("/")[-1].split(".")[0] + "_proc.jpg") for file in train_files_class_3 ]
-	# output_aug_class_3    = add_augmented_images("class_3", NUM_CLASS_3, 4000)
+	train_class_3         = "train_class_3"
+	train_files_class_3   = [i for i in output_images if train_class_3 in i]
+	input_aug_class_3     = [ File(file.split("/")[-1].split(".")[0] + "_proc.jpg") for file in train_files_class_3 ]
+	output_aug_class_3    = add_augmented_images("class_3", NUM_CLASS_3, 4000)
 	
+	job_augment_class_2 = Job(wrapper)\
+						.add_args("preprocess_augment.py --class_str class_2 --num {}".format(NUM_CLASS_2))\
+						.add_inputs(*input_aug_class_2, augment_images_file)\
+						.add_outputs(*output_aug_class_2)
 
-	# job_augment_class_2 = Job(augment_images)\
-	# 					.add_args("--class_str class_2 --num {}".format(NUM_CLASS_2))\
-	# 					.add_inputs(*input_aug_class_2)\
-	# 					.add_outputs(*output_aug_class_2)
-
-	# job_augment_class_3 = Job(augment_images)\
-	# 					.add_args("--class_str class_3 --num {}".format(NUM_CLASS_3))\
-	# 					.add_inputs(*input_aug_class_3)\
-	# 					.add_outputs(*output_aug_class_3)
+	job_augment_class_3 = Job(wrapper)\
+						.add_args("preprocess_augment.py --class_str class_3 --num {}".format(NUM_CLASS_3))\
+						.add_inputs(*input_aug_class_3, augment_images_file)\
+						.add_outputs(*output_aug_class_3)
 
 
 	# train_class = 'train_class_'
@@ -262,7 +337,7 @@ def run_workflow(DATA_PATH):
 	# job_vgg16_hpo = Job(vgg16_hpo)\
 	# 					.add_args("--trials {} --epochs {} --batch_size {}".format(TRIALS, EPOCHS, BATCH_SIZE))\
 	# 					.add_inputs(*output_aug_class_3, *output_aug_class_2,\
-	# 						*input_hpo_train, *input_hpo_val,data_loader_file, model_selction_file)\
+	# 						*input_hpo_train, *input_hpo_val,data_loader_file, model_selection_file)\
 	# 					.add_checkpoint(vgg16_pkl_file, stage_out=True)\
 	# 					.add_outputs(best_params_file)\
 	# 					.add_profiles(Namespace.PEGASUS, key="maxwalltime", value=MAXTIMEWALL)
@@ -273,7 +348,7 @@ def run_workflow(DATA_PATH):
 	# 					.add_args("--epochs {} --batch_size {}".format( EPOCHS, BATCH_SIZE))\
 	# 					.add_inputs(*output_aug_class_3, *output_aug_class_2, best_params_file,\
 	# 						*input_hpo_train, *input_hpo_val, *input_hpo_test,\
-	# 						data_loader_file, model_selction_file)\
+	# 						data_loader_file, model_selection_file)\
 	# 					.add_checkpoint(checkpoint_vgg16_pkl_file , stage_out=True)\
 	# 					.add_outputs(File("final_vgg16_model.pth"),File("loss_vgg16.png"))\
 	# 					.add_profiles(Namespace.PEGASUS, key="maxwalltime", value=MAXTIMEWALL)
@@ -282,12 +357,12 @@ def run_workflow(DATA_PATH):
 	# # Job eval
 	# job_eval_model = Job(eval_model)\
 	# 					.add_inputs(*input_hpo_test,data_loader_file,best_params_file,\
-	# 								model_selction_file,File("final_vgg16_model.pth"))\
+	# 								model_selection_file,File("final_vgg16_model.pth"))\
 	# 					.add_outputs(File("final_confusion_matrix_norm.png"),File("exp_results.csv"))
 
 
 	## ADD JOBS TO THE WORKFLOW
-	wf.add_jobs(job_create_dataset)
+	wf.add_jobs(job_create_dataset, *job_preprocess_images, job_augment_class_2 ,job_augment_class_3)
 	# wf.add_jobs(job_create_dataset,
 	# 			*job_preprocess_images,job_augment_class_2 ,job_augment_class_3, job_vgg16_hpo,\
 	# 			job_train_model,job_eval_model)  
@@ -296,7 +371,7 @@ def run_workflow(DATA_PATH):
 	# EXECUTE THE WORKFLOW
 	#-------------------------------------------------------------------------------------
 	try:
-		wf.plan(submit=False)
+		wf.plan(submit=True, sites=["cori"], output_sites=["cori"], dir="submit", cleanup="inplace")
 		# wf.wait()
 		# wf.statistics()
 	except PegasusClientError as e:
@@ -328,7 +403,7 @@ def main():
 	parser.add_argument('--data_path', type=str, default='galaxy_data/',help='path to dataset ')
 	parser.add_argument('--epochs', type=int,default=1, help = "number of training epochs")  
 	parser.add_argument('--trials', type=int,default=1, help = "number of trials") 
-	parser.add_argument('--num_workers', type=int, default= 5, help = "number of workers")
+	parser.add_argument('--num_workers', type=int, default= 1, help = "number of workers")
 	parser.add_argument('--num_class_2', type=int, default= 3, help = "number of augmented class 2 files")
 	parser.add_argument('--num_class_3', type=int, default= 4, help = "number of augmented class 3 files")
 	parser.add_argument('--maxwalltime', type=int, default= 30, help = "maxwalltime")
