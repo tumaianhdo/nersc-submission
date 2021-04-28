@@ -241,8 +241,9 @@ def run_workflow(DATA_PATH):
 								cores="1",
 								runtime="1200",
 								# exitcode_success_msg="End of program",
-								glite_arguments="--qos debug --constraint=haswell --licenses=SCRATCH"
-							)
+								glite_arguments="--qos=debug --constraint=haswell --licenses=SCRATCH"
+							)\
+							.add_env(key="USER_HOME", value="${NERSC_USER_HOME}")
 
 	# Data Aqusition: Create Dataset
 	# create_dataset = Transformation("create_dataset",site="local",
@@ -363,6 +364,7 @@ def run_workflow(DATA_PATH):
 
 	## ADD JOBS TO THE WORKFLOW
 	wf.add_jobs(job_create_dataset, *job_preprocess_images, job_augment_class_2 ,job_augment_class_3)
+	wf.add_dependency(job_create_dataset, children=job_preprocess_images)
 	# wf.add_jobs(job_create_dataset,
 	# 			*job_preprocess_images,job_augment_class_2 ,job_augment_class_3, job_vgg16_hpo,\
 	# 			job_train_model,job_eval_model)  
