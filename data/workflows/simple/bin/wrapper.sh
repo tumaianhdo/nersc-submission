@@ -4,7 +4,9 @@ module load PrgEnv-gnu
 module load craype-haswell
 module load python
 module load pytorch
+echo "PYTHONUSERBASE = ${PYTHONUSERBASE}"
 export PATH="${PYTHONUSERBASE}/bin:${PATH}"
+echo "PATH = $PATH"
 
 # Dynamic linking
 export CRAYPE_LINK_TYPE=dynamic
