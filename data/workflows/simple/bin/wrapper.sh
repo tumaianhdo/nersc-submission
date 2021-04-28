@@ -4,6 +4,7 @@ module load PrgEnv-gnu
 module load craype-haswell
 module load python
 module load pytorch
+export PYTHONUSERBASE="${USER_HOME}/.local/cori/pytorch1.7.1"
 echo "PYTHONUSERBASE = ${PYTHONUSERBASE}"
 export PATH="${PYTHONUSERBASE}/bin:${PATH}"
 echo "PATH = $PATH"
@@ -18,6 +19,7 @@ module li
 echo $(which python)
 pip freeze 
 pip freeze | grep opencv
+pip show opencv-python
 python -c "import cv2"
 srun -n $PEGASUS_CORES python -c "import cv2"
 srun -n $PEGASUS_CORES python $@ > output
