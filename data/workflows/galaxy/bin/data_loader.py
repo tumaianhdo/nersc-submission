@@ -61,17 +61,17 @@ class GalaxyDataset(Dataset):
         class_4_files = []
 
         if prefix == "trainval":
-            class_0_files = glob.glob(filespath + "train" + "_class_0_*.jpg") + glob.glob(filespath + "val" + "_class_0_*.jpg")
-            class_1_files = glob.glob(filespath + "train" + "_class_1_*.jpg") + glob.glob(filespath + "val" + "_class_1_*.jpg")
-            class_2_files = glob.glob(filespath + "train" + "_class_2_*.jpg") + glob.glob(filespath + "val" + "_class_2_*.jpg")
-            class_3_files = glob.glob(filespath + "train" + "_class_3_*.jpg") + glob.glob(filespath + "val" + "_class_3_*.jpg")
-            class_4_files = glob.glob(filespath + "train" + "_class_4_*.jpg") + glob.glob(filespath + "val" + "_class_4_*.jpg")
+            class_0_files = glob.glob(filespath + "train" + "_class_0_*_proc.jpg") + glob.glob(filespath + "val" + "_class_0_*_proc.jpg")
+            class_1_files = glob.glob(filespath + "train" + "_class_1_*_proc.jpg") + glob.glob(filespath + "val" + "_class_1_*_proc.jpg")
+            class_2_files = glob.glob(filespath + "train" + "_class_2_*_proc.jpg") + glob.glob(filespath + "val" + "_class_2_*_proc.jpg")
+            class_3_files = glob.glob(filespath + "train" + "_class_3_*_proc.jpg") + glob.glob(filespath + "val" + "_class_3_*_proc.jpg")
+            class_4_files = glob.glob(filespath + "train" + "_class_4_*_proc.jpg") + glob.glob(filespath + "val" + "_class_4_*_proc.jpg")
         else:
-            class_0_files = glob.glob(filespath + prefix + "_class_0_*.jpg")
-            class_1_files = glob.glob(filespath + prefix + "_class_1_*.jpg")
-            class_2_files = glob.glob(filespath + prefix + "_class_2_*.jpg")
-            class_3_files = glob.glob(filespath + prefix + "_class_3_*.jpg")
-            class_4_files = glob.glob(filespath + prefix + "_class_4_*.jpg")           
+            class_0_files = glob.glob(filespath + prefix + "_class_0_*_proc.jpg")
+            class_1_files = glob.glob(filespath + prefix + "_class_1_*_proc.jpg")
+            class_2_files = glob.glob(filespath + prefix + "_class_2_*_proc.jpg")
+            class_3_files = glob.glob(filespath + prefix + "_class_3_*_proc.jpg")
+            class_4_files = glob.glob(filespath + prefix + "_class_4_*_proc.jpg")           
 
 
         self.filenames = class_0_files + class_1_files + class_2_files + class_3_files + class_4_files
