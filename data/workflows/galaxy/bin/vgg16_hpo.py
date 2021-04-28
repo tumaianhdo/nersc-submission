@@ -22,6 +22,7 @@ import logging
 import time
 from model_selection import EarlyStopping, VGG16Model
 from data_loader import GalaxyDataset
+from mpi4py import MPI
 
 
 timestr = time.strftime("%Y%m%d-%H%M%S")
@@ -350,8 +351,9 @@ def create_optuna_study():
         else:
             print("This study is finished. Nothing to do.")
     except Exception as e:
-        STUDY = optuna.create_study(direction = 'minimize', study_name='Galaxy Classification')
-        STUDY.optimize(objective, n_trials= TRIALS,  callbacks=[hpo_monitor])
+        # STUDY = optuna.create_study(direction = 'minimize', study_name='Galaxy Classification')
+        STUDY = optuna.load_study(study_name='Galaxy_Classification', storage='mysql://decaf_hpo_db_admin:3Iiidd_2s25j3w33jjdd@nerscdb04.nersc.gov/decaf_hpo_db', pruner=optuna.pruners.NopPruner())
+        STUDY.optimize(objective, n_trials= TRIALS,  callbacks=[hpo_monitor], gc_after_trial=True)
         best_trial = STUDY.best_trial
         get_best_params(best_trial)
 
@@ -364,6 +366,7 @@ def main():
     global ARGS
     global BATCH_SIZE
     global EPOCHS
+    global WORKER_ID
 
     ARGS = get_arguments()   
     seed = ARGS.seed
@@ -378,6 +381,15 @@ def main():
     TRIALS     = ARGS.trials
     BATCH_SIZE = ARGS.batch_size
     EPOCHS     = ARGS.epochs
+    WORKER_ID  = MPI.COMM_WORLD.Get_rank()
+
+    print(f"Worker = {WORKER_ID}: torch.cuda.is_available() = {torch.cuda.is_available()}")
+    print(f"Worker = {WORKER_ID}: torch.cuda.current_device() = {torch.cuda.current_device()}")
+    print(f"Worker = {WORKER_ID}: torch.cuda.device(0) = {torch.cuda.device(0)}")
+    print(f"Worker = {WORKER_ID}: torch.cuda.device_count() = {torch.cuda.device_count()}")
+    print(f"Worker = {WORKER_ID}: torch.cuda.get_device_name(0) = {torch.cuda.get_device_name(0)}")
+    print(f'Worker = {WORKER_ID}: torch.device("cuda") = {torch.device("cuda")}')
+    print(f"Worker = {WORKER_ID}: CPUs = {os.sched_getaffinity(0)}")
 
     create_optuna_study()
     exec_time = time.time() - start
