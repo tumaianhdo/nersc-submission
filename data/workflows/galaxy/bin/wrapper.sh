@@ -4,6 +4,7 @@ module load PrgEnv-gnu
 module load craype-haswell
 module load python
 module load pytorch
+export PYTHONUSERBASE="${USER_HOME}/.local/cori/pytorch1.7.1"
 export PATH="${PYTHONUSERBASE}/bin:${PATH}"
 
 # Dynamic linking
