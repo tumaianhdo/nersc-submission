@@ -24,7 +24,7 @@ def parse_args(args):
 def main():
     args = parse_args(sys.argv[1:])
     input_dir  = args.input_dir
-    all_images = glob.glob(input_dir + "*.jpg")
+    all_images = glob.glob(input_dir + "*_class_*.jpg")
 
 
     for img_path in all_images:

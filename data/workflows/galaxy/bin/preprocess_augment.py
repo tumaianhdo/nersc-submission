@@ -101,7 +101,7 @@ class DataAugmentation:
 
 def add_augmented_data(class_str, num):
     augmentation = DataAugmentation()
-    all_images = glob.glob(INPUT_DIR +"train_"+class_str+ "*.jpg")
+    all_images = glob.glob(INPUT_DIR +"train_"+class_str+ "*_proc.jpg")
     new_images = 0
     img_num = 4000
     while new_images < num:
