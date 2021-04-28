@@ -352,7 +352,7 @@ def create_optuna_study():
             print("This study is finished. Nothing to do.")
     except Exception as e:
         # STUDY = optuna.create_study(direction = 'minimize', study_name='Galaxy Classification')
-        STUDY = optuna.load_study(study_name='Galaxy_Classification', storage='mysql://decaf_hpo_db_admin:3Iiidd_2s25j3w33jjdd@nerscdb04.nersc.gov/decaf_hpo_db', pruner=optuna.pruners.NopPruner())
+        STUDY = optuna.load_study(study_name='Galaxy_Pegasus', storage='mysql://decaf_hpo_db_admin:3Iiidd_2s25j3w33jjdd@nerscdb04.nersc.gov/decaf_hpo_db', pruner=optuna.pruners.NopPruner())
         STUDY.optimize(objective, n_trials= TRIALS,  callbacks=[hpo_monitor], gc_after_trial=True)
         best_trial = STUDY.best_trial
         get_best_params(best_trial)
