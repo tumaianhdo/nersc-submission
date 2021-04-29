@@ -22,6 +22,6 @@ GPU_STRING="0"
 for (( i=1; i<${PEGASUS_NUM_GPUS}; i++ )); do
     GPU_STRING+=",${i}"
 done
-srun -G ${PEGASUS_NUM_GPUS} -n ${PEGASUS_NUM_GPUS} --gpus-per-task=1 --gpu-bind=map_gpu:${GPU_STRING} --hint=nomultithread python $@ >> output
+srun -G ${PEGASUS_NUM_GPUS} -n ${PEGASUS_NUM_GPUS} --gpus-per-task=1 --gpu-bind=map_gpu:${GPU_STRING} --hint=nomultithread python $@
 
 cd $old_dir
