@@ -22,8 +22,7 @@ GPU_STRING="0"
 for (( i=1; i<${NUM_GPUS}; i++ )); do
     GPU_STRING+=",${i}"
 done
-# cmd="srun -G ${NUM_GPUS} -n ${NUM_GPUS} --cpus-per-task=${CORES_PER_GPU} --gpus-per-task=1 --gpu-bind=map_gpu:${GPU_STRING} --hint=nomultithread ${EXTRA_ARGS} python $@"
-cmd="srun -G ${NUM_GPUS} -n ${NUM_GPUS} --gpus-per-task=1 --gpu-bind=map_gpu:${GPU_STRING} --hint=nomultithread ${EXTRA_ARGS} python $@"
+cmd="srun -G ${NUM_GPUS} -n ${NUM_GPUS} --cpus-per-task=${CORES_PER_GPU} --gpus-per-task=1 --gpu-bind=map_gpu:${GPU_STRING} --hint=nomultithread ${EXTRA_ARGS} python $@"
 echo ${cmd} 
 ${cmd}
 
