@@ -261,6 +261,7 @@ def get_data_loader(prefix):
 def objective(trial,direction = "minimize"):
     
     print("Performing trial {}".format(trial.number))
+    start = time.time()
     
     train_loader = get_data_loader("train")
     val_loader   = get_data_loader("val")
@@ -303,10 +304,10 @@ def objective(trial,direction = "minimize"):
         if early_stop.early_stop:
             break
     draw_training_curves(train_loss, val_loss, "loss", trial.number )
-    
-    
+
     total_loss/=EPOCHS
     
+    print(f'Worker {WORKER_ID} finished trial {trial.number} in {time.time() - start} seconds')
     return total_loss
     
     
@@ -395,7 +396,7 @@ def main():
     exec_time = time.time() - start
 
 
-    print('Execution time in seconds: ' + str(exec_time))
+    print(f"Worker = {WORKER_ID}: Execution time in seconds: {exec_time}")
     return
 
 if __name__ == "__main__":
