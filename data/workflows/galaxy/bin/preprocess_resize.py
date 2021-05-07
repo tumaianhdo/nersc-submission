@@ -3,6 +3,7 @@ import random
 import glob
 import sys
 import argparse
+import time
 from PIL import Image
 
 
@@ -22,6 +23,7 @@ def parse_args(args):
 
 
 def main():
+    start = time.time()
     args = parse_args(sys.argv[1:])
     input_dir  = args.input_dir
     all_images = glob.glob(input_dir + "*_class_*.jpg")
@@ -42,6 +44,9 @@ def main():
         img_path = img_path.split(".")[0]
         img_path = img_path + "_proc.jpg"
         img.save(img_path)
+
+    exec_time = time.time() - start
+    print('Execution time in seconds: ' + str(exec_time))
 
 
 

@@ -11,6 +11,7 @@ import sys
 import argparse
 from os import path
 import random
+import time
 
 DATA_DIR      = ""
 METADATA_FILE = 'training_solutions_rev1.csv'
@@ -100,6 +101,7 @@ def label_dataset(csv):
     
 def main():
     
+    start = time.time()
     args = parse_args(sys.argv[1:])
     input_path = args.input_dir
     MAX_IMG    = args.max_img
@@ -153,6 +155,9 @@ def main():
     pf_train = add_prefix(train, "train")
     pf_val   = add_prefix(val, "val")
     pf_test  = add_prefix(test, "test")
+    
+    exec_time = time.time() - start
+    print('Execution time in seconds: ' + str(exec_time))
 
 if __name__ == '__main__':
     main()
