@@ -24,6 +24,9 @@ for (( i=1; i<${NUM_GPUS}; i++ )); do
 done
 cmd="srun -G ${NUM_GPUS} -n ${NUM_GPUS} --cpus-per-task=${CORES_PER_GPU} --gpus-per-task=1 --gpu-bind=map_gpu:${GPU_STRING} --hint=nomultithread ${EXTRA_ARGS} python $@"
 echo ${cmd} 
+start=$SECONDS
 ${cmd}
+end=$SECONDS
+echo "Duration: $((end-start)) seconds."
 
 cd $old_dir

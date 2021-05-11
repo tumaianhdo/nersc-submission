@@ -12,7 +12,11 @@ export CRAYPE_LINK_TYPE=dynamic
 
 old_dir=`pwd`
 cd $PEGASUS_SCRATCH_DIR
+# cd $PEGASUS_HOME/bin/Pegasus-kickstast
 
+start=$SECONDS
 srun -n 1 python $@
+end=$SECONDS
+echo "Duration: $((end-start)) seconds."
 
 cd $old_dir
