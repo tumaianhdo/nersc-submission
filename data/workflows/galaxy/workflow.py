@@ -268,9 +268,9 @@ def run_workflow(DATA_PATH):
 	wrapper = Transformation("wrapper", site="cori", pfn="https://raw.githubusercontent.com/tumaianhdo/nersc-submission/main/data/workflows/galaxy/bin/wrapper.sh", is_stageable=True)\
 							.add_pegasus_profile(
 								cores="1",
-								runtime="7200",
+								runtime="1800",
 								# exitcode_success_msg="End of program",
-								glite_arguments="--qos=premium --constraint=haswell --licenses=SCRATCH",
+								glite_arguments="--qos=debug --constraint=haswell --licenses=SCRATCH",
 								grid_start="NoGridStart"
 							)\
 							.add_env(key="USER_HOME", value="${NERSC_USER_HOME}")
@@ -281,8 +281,8 @@ def run_workflow(DATA_PATH):
 							.add_pegasus_profile(
 								# cores="2",
 								# ppn="",
-								runtime="7200",
-								queue="@escori",
+								# runtime="14400",
+								queue="@escori"
 								# exitcode_success_msg="End of program",
 								# glite_arguments="--constraint=gpu --gpus=1 --ntasks=1 --cpus-per-task=1 --gpus-per-task=1 --hint=nomultithread"
 							)\
@@ -344,7 +344,7 @@ def run_workflow(DATA_PATH):
 						.add_outputs(*output_files)
 						# .add_profiles(Namespace.PEGASUS, key="gridstart.invoke.length", value="100")
 
-	job_preprocess_images = [Job(wrapper).add_args(preprocess_images_file).add_inputs(preprocess_images_file) for i in range(NUM_WORKERS)]
+	job_preprocess_images = [Job(wrapper).add_args(preprocess_images_file).add_inputs(preprocess_images_file) for i in range(NUM_PREPROCESSORS)]
 	resized_images = split_preprocess_jobs(job_preprocess_images, output_files, "_proc")
 
 	train_class_2         = "train_class_2"
@@ -384,15 +384,17 @@ def run_workflow(DATA_PATH):
 	hpo_log_file = File(hpo_log_fn)
 	
 	gpu_slurm_flags = "--constraint=gpu --gpus="+str(NUM_WORKERS)+" --ntasks="+str(NUM_WORKERS)+" --cpus-per-task="+str(CORES_PER_GPU)+" --gpus-per-task=1 --hint=nomultithread"
+	trials_per_worker = TRIALS // NUM_WORKERS
 	job_vgg16_hpo = Job(gpu_wrapper)\
-						.add_args("vgg16_hpo.py --trials {} --epochs {} --batch_size {}".format(TRIALS, EPOCHS, BATCH_SIZE))\
+						.add_args("vgg16_hpo.py --trials {} --epochs {} --batch_size {}".format(trials_per_worker, EPOCHS, BATCH_SIZE))\
 						.add_inputs(*output_aug_class_3, *output_aug_class_2,*input_hpo_train, *input_hpo_val, data_loader_file, model_selection_file, vgg16_hpo_file)\
 						.add_checkpoint(vgg16_pkl_file, stage_out=True)\
 						.add_outputs(best_params_file)\
-						.add_profiles(Namespace.PEGASUS, key="maxwalltime", value=MAXTIMEWALL)\
 						.add_profiles(Namespace.PEGASUS, key="glite.arguments", value=gpu_slurm_flags)\
 						.add_profiles(Namespace.ENV, key="NUM_GPUS", value=str(NUM_WORKERS))\
-						.add_profiles(Namespace.ENV, key="CORES_PER_GPU", value=str(CORES_PER_GPU))
+						.add_profiles(Namespace.ENV, key="CORES_PER_GPU", value=str(CORES_PER_GPU))\
+						.add_profiles(Namespace.PEGASUS, key="runtime", value="21600")
+						# .add_profiles(Namespace.PEGASUS, key="maxwalltime", value="360")\
 						# .add_profiles(Namespace.ENV, key="EXTRA_ARGS", value="--output=" + hpo_log_fn)
 
 
@@ -405,10 +407,12 @@ def run_workflow(DATA_PATH):
 							data_loader_file, model_selection_file, vgg16_train_file)\
 						.add_checkpoint(checkpoint_vgg16_pkl_file , stage_out=True)\
 						.add_outputs(File("final_vgg16_model.pth"), File("loss_vgg16.png"))\
-						.add_profiles(Namespace.PEGASUS, key="maxwalltime", value=MAXTIMEWALL)\
 						.add_profiles(Namespace.PEGASUS, key="glite.arguments", value=gpu_slurm_flags)\
 						.add_profiles(Namespace.ENV, key="NUM_GPUS", value="1")\
 						.add_profiles(Namespace.ENV, key="CORES_PER_GPU", value=str(CORES_PER_GPU))
+						# .add_profiles(Namespace.PEGASUS, key="runtime", value="7200")\
+						# .add_profiles(Namespace.PEGASUS, key="maxwalltime", value="120")\
+						
 
 
 	# # Job eval
@@ -422,6 +426,9 @@ def run_workflow(DATA_PATH):
 						.add_profiles(Namespace.PEGASUS, key="glite.arguments", value=gpu_slurm_flags)\
 						.add_profiles(Namespace.ENV, key="NUM_GPUS", value="1")\
 						.add_profiles(Namespace.ENV, key="CORES_PER_GPU", value=str(CORES_PER_GPU))
+						# .add_profiles(Namespace.PEGASUS, key="runtime", value="7200")\
+						# .add_profiles(Namespace.PEGASUS, key="maxwalltime", value="120")\
+						
 
 
 	## ADD JOBS TO THE WORKFLOW
@@ -436,7 +443,7 @@ def run_workflow(DATA_PATH):
 	# EXECUTE THE WORKFLOW
 	#-------------------------------------------------------------------------------------
 	try:
-		wf.plan(submit=True, sites=["cori"], output_sites=["cori"], dir="submit", cleanup="inplace")
+		wf.plan(submit=False, sites=["cori"], output_sites=["cori"], dir="submit", cleanup="inplace")
 		# wf.wait()
 		# wf.statistics()
 	except PegasusClientError as e:
@@ -461,22 +468,24 @@ def main():
 	global NUM_CLASS_3
 	global MAXTIMEWALL
 	global CORES_PER_GPU
+	global NUM_PREPROCESSORS
 
 	
 	parser = argparse.ArgumentParser(description="Galaxy Classification")   
 	parser.add_argument('--batch_size', type=int, default=32, help='batch size for training')
 	parser.add_argument('--seed', type=int, default=10, help='select seed number for reproducibility')
 	# parser.add_argument('--data_path', type=str, default='galaxy_data/',help='path to dataset ')
+	# parser.add_argument('--num_class_2', type=int, default= 3, help = "number of augmented class 2 files")
+	# parser.add_argument('--num_class_3', type=int, default= 4, help = "number of augmented class 3 files")
 	parser.add_argument('--data_path', type=str, default='full_galaxy_data/',help='path to dataset ')
+	parser.add_argument('--num_class_2', type=int, default= 7000, help = "number of augmented class 2 files")
+	parser.add_argument('--num_class_3', type=int, default= 4000, help = "number of augmented class 3 files")
 	parser.add_argument('--epochs', type=int,default=10, help = "number of training epochs")  
 	parser.add_argument('--trials', type=int,default=1, help = "number of trials") 
 	parser.add_argument('--num_workers', type=int, default= 1, help = "number of workers")
-	# parser.add_argument('--num_class_2', type=int, default= 3, help = "number of augmented class 2 files")
-	# parser.add_argument('--num_class_3', type=int, default= 4, help = "number of augmented class 3 files")
-	parser.add_argument('--num_class_2', type=int, default= 7000, help = "number of augmented class 2 files")
-	parser.add_argument('--num_class_3', type=int, default= 4000, help = "number of augmented class 3 files")
+	parser.add_argument('--num_preprocessors', type=int, default= 1, help = "number of preprocessors")
 	parser.add_argument('--maxwalltime', type=int, default= 120, help = "maxwalltime")
-	parser.add_argument('--cores_per_gpu', type=int, default= 4, help = "Number of physical cores per GPU")
+	parser.add_argument('--cores_per_gpu', type=int, default= 5, help = "Number of physical cores per GPU")
 
 	
 
@@ -488,6 +497,7 @@ def main():
 	EPOCHS      = ARGS.epochs
 	TRIALS      = ARGS.trials
 	NUM_WORKERS = ARGS.num_workers
+	NUM_PREPROCESSORS = ARGS.num_preprocessors
 	NUM_CLASS_2 = ARGS.num_class_2
 	NUM_CLASS_3 = ARGS.num_class_3
 	MAXTIMEWALL = ARGS.maxwalltime
