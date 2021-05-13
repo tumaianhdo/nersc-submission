@@ -268,9 +268,9 @@ def run_workflow(DATA_PATH):
 	wrapper = Transformation("wrapper", site="cori", pfn="https://raw.githubusercontent.com/tumaianhdo/nersc-submission/main/data/workflows/galaxy/bin/wrapper.sh", is_stageable=True)\
 							.add_pegasus_profile(
 								cores="1",
-								runtime="1800",
+								runtime="7200",
 								# exitcode_success_msg="End of program",
-								glite_arguments="--qos=debug --constraint=haswell --licenses=SCRATCH",
+								glite_arguments="--qos=premium --constraint=haswell --licenses=SCRATCH",
 								grid_start="NoGridStart"
 							)\
 							.add_env(key="USER_HOME", value="${NERSC_USER_HOME}")
@@ -281,7 +281,7 @@ def run_workflow(DATA_PATH):
 							.add_pegasus_profile(
 								# cores="2",
 								# ppn="",
-								# runtime="14400",
+								runtime="14400",
 								queue="@escori"
 								# exitcode_success_msg="End of program",
 								# glite_arguments="--constraint=gpu --gpus=1 --ntasks=1 --cpus-per-task=1 --gpus-per-task=1 --hint=nomultithread"
@@ -392,8 +392,8 @@ def run_workflow(DATA_PATH):
 						.add_outputs(best_params_file)\
 						.add_profiles(Namespace.PEGASUS, key="glite.arguments", value=gpu_slurm_flags)\
 						.add_profiles(Namespace.ENV, key="NUM_GPUS", value=str(NUM_WORKERS))\
-						.add_profiles(Namespace.ENV, key="CORES_PER_GPU", value=str(CORES_PER_GPU))\
-						.add_profiles(Namespace.PEGASUS, key="runtime", value="21600")
+						.add_profiles(Namespace.ENV, key="CORES_PER_GPU", value=str(CORES_PER_GPU))
+						# .add_profiles(Namespace.PEGASUS, key="runtime", value="21600")
 						# .add_profiles(Namespace.PEGASUS, key="maxwalltime", value="360")\
 						# .add_profiles(Namespace.ENV, key="EXTRA_ARGS", value="--output=" + hpo_log_fn)
 
