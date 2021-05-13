@@ -264,15 +264,15 @@ def get_data_loader(prefix):
 
 def objective(trial,direction = "minimize"):
     
-    print("Worker {WORKER_ID} Performing trial {}".format(trial.number))
+    print(f"Worker {WORKER_ID} is performing trial {trial.number}")
     
     s_usage = resource.getrusage(resource.RUSAGE_SELF).ru_maxrss
     print(f'Worker {WORKER_ID}: Start objective usage: {s_usage}')
 
     info = nvmlDeviceGetMemoryInfo(handle)
-    print("Worker {WORKER_ID}: Start total memory:", info.total)
-    print("Worker {WORKER_ID}: Start free memory:", info.free)
-    print("Worker {WORKER_ID}: Start used memory:", info.used)
+    print(f"Worker {WORKER_ID}: Start total memory: {info.total}")
+    print(f"Worker {WORKER_ID}: Start free memory: {info.free}")
+    print(f"Worker {WORKER_ID}: Start used memory: {info.used}")
 
     start = time.time()
     
@@ -323,9 +323,9 @@ def objective(trial,direction = "minimize"):
     print(f'Worker {WORKER_ID} finished trial {trial.number} in {time.time() - start} seconds')
 
     info = nvmlDeviceGetMemoryInfo(handle)
-    print("Worker {WORKER_ID}: End total memory:", info.total)
-    print("Worker {WORKER_ID}: End free memory:", info.free)
-    print("Worker {WORKER_ID}: End used memory:", info.used)
+    print(f"Worker {WORKER_ID}: End total memory: {info.total}")
+    print(f"Worker {WORKER_ID}: End free memory: {info.free}")
+    print(f"Worker {WORKER_ID}: End used memory: {info.used}")
 
     e_usage = resource.getrusage(resource.RUSAGE_SELF).ru_maxrss
     print(f'Worker {WORKER_ID}: End objective usage: {e_usage}')
