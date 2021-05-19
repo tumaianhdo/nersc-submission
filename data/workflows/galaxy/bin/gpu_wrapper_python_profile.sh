@@ -15,7 +15,8 @@ module load craype-haswell
 # Dynamic linking
 export CRAYPE_LINK_TYPE=dynamic
 
-MONITORING="-m cProfile -o ${SLURM_JOBID}.pstats"
+# MONITORING="-m cProfile -o ${SLURM_JOBID}.pstats"
+MONITORING="-m cProfile -o ${LOG_FN}"
 
 old_dir=`pwd`
 cd $PEGASUS_SCRATCH_DIR
