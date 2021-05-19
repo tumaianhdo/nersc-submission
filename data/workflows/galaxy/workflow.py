@@ -291,7 +291,50 @@ def run_workflow(DATA_PATH):
 							# .add_env(key="PEGASUS_TRANSFER_THREADS", value="8")	
 							# .add_env(key="NUM_GPUS", value="1")\
 							# .add_env(key="CORES_PER_GPU", value="1")\
-							
+
+	if GPU_MONITORING:
+		gpu_wrapper = Transformation("gpu_wrapper", site="cori", pfn="https://raw.githubusercontent.com/tumaianhdo/nersc-submission/main/data/workflows/galaxy/bin/gpu_wrapper_monitoring.sh", is_stageable=True)\
+								.add_pegasus_profile(
+									# cores="2",
+									# ppn="",
+									runtime="14400",
+									queue="@escori"
+									# exitcode_success_msg="End of program",
+									# glite_arguments="--constraint=gpu --gpus=1 --ntasks=1 --cpus-per-task=1 --gpus-per-task=1 --hint=nomultithread"
+								)\
+								.add_env(key="USER_HOME", value="${NERSC_USER_HOME}")
+								# .add_profiles(Namespace.PEGASUS, key="transfer.threads", value="8")\
+								# .add_env(key="PEGASUS_TRANSFER_THREADS", value="8")	
+								# .add_env(key="NUM_GPUS", value="1")\
+								# .add_env(key="CORES_PER_GPU", value="1")\
+
+	elif PYTHON_PROFILING:
+		wrapper = Transformation("wrapper", site="cori", pfn="https://raw.githubusercontent.com/tumaianhdo/nersc-submission/main/data/workflows/galaxy/bin/wrapper_python_profile.sh", is_stageable=True)\
+								.add_pegasus_profile(
+									cores="1",
+									runtime="7200",
+									# exitcode_success_msg="End of program",
+									glite_arguments="--qos=premium --constraint=haswell --licenses=SCRATCH",
+									grid_start="NoGridStart"
+								)\
+								.add_env(key="USER_HOME", value="${NERSC_USER_HOME}")
+								# .add_profiles(Namespace.PEGASUS, key="transfer.threads", value="8")\
+								# .add_env(key="PEGASUS_TRANSFER_THREADS", value="8")	
+
+		gpu_wrapper = Transformation("gpu_wrapper", site="cori", pfn="https://raw.githubusercontent.com/tumaianhdo/nersc-submission/main/data/workflows/galaxy/bin/gpu_wrapper_python_profile.sh", is_stageable=True)\
+								.add_pegasus_profile(
+									# cores="2",
+									# ppn="",
+									runtime="14400",
+									queue="@escori"
+									# exitcode_success_msg="End of program",
+									# glite_arguments="--constraint=gpu --gpus=1 --ntasks=1 --cpus-per-task=1 --gpus-per-task=1 --hint=nomultithread"
+								)\
+								.add_env(key="USER_HOME", value="${NERSC_USER_HOME}")
+								# .add_profiles(Namespace.PEGASUS, key="transfer.threads", value="8")\
+								# .add_env(key="PEGASUS_TRANSFER_THREADS", value="8")	
+								# .add_env(key="NUM_GPUS", value="1")\
+								# .add_env(key="CORES_PER_GPU", value="1")\
 
 	# Data Aqusition: Create Dataset
 	# create_dataset = Transformation("create_dataset",site="local",
@@ -323,7 +366,7 @@ def run_workflow(DATA_PATH):
 	# 								pfn = str(Path(".").parent.resolve() / "bin/eval_model_vgg16.py"), 
 	# 								is_stageable= True)
 
-	tc.add_transformations(pegasus_transfer, pegasus_dirmanager, pegasus_cleanup, system_chmod, wrapper, gpu_wrapper)
+	tc.add_transformations(pegasus_transfer, pegasus_dirmanager, pegasus_cleanup, system_chmod, wrapper, gpu_wrapper, gpu_wrapper_monitoring, gpu_wrapper_python_profile)
 	# tc.add_transformations(
 	# 	create_dataset,
 	# 	preprocess_images,
@@ -469,7 +512,8 @@ def main():
 	global MAXTIMEWALL
 	global CORES_PER_GPU
 	global NUM_PREPROCESSORS
-
+    global GPU_MONITORING
+    global PYTHON_PROFILING
 	
 	parser = argparse.ArgumentParser(description="Galaxy Classification")   
 	parser.add_argument('--batch_size', type=int, default=32, help='batch size for training')
@@ -487,22 +531,26 @@ def main():
 	parser.add_argument('--maxwalltime', type=int, default= 120, help = "maxwalltime")
 	parser.add_argument('--cores_per_gpu', type=int, default= 5, help = "Number of physical cores per GPU")
 
+    # These two options cannot be used together
+    monitoring = arg_parser.add_mutually_exclusive_group()
+    monitoring.add_argument('--gpu-monitoring', dest='gpu_monitoring', action='store_true', help='Activate GPU monitoring with Nvprof for tasks using GPUs')
+    monitoring.add_argument('--python-profiling', dest='python_profiling', action='store_true', help='Activate Python profiling with cProfile module for ALL Python jobs')
 	
 
-
-	ARGS        = parser.parse_args()
-	BATCH_SIZE  = ARGS.batch_size
-	SEED        = ARGS.seed
-	DATA_PATH   = ARGS.data_path
-	EPOCHS      = ARGS.epochs
-	TRIALS      = ARGS.trials
-	NUM_WORKERS = ARGS.num_workers
+	ARGS              = parser.parse_args()
+	BATCH_SIZE        = ARGS.batch_size
+	SEED              = ARGS.seed
+	DATA_PATH         = ARGS.data_path
+	EPOCHS            = ARGS.epochs
+	TRIALS            = ARGS.trials
+	NUM_WORKERS       = ARGS.num_workers
 	NUM_PREPROCESSORS = ARGS.num_preprocessors
-	NUM_CLASS_2 = ARGS.num_class_2
-	NUM_CLASS_3 = ARGS.num_class_3
-	MAXTIMEWALL = ARGS.maxwalltime
-	CORES_PER_GPU = ARGS.cores_per_gpu
-
+	NUM_CLASS_2       = ARGS.num_class_2
+	NUM_CLASS_3       = ARGS.num_class_3
+	MAXTIMEWALL       = ARGS.maxwalltime
+	CORES_PER_GPU     = ARGS.cores_per_gpu
+    GPU_MONITORING    = ARGS.gpu_monitoring
+    PYTHON_PROFILING  = ARGS.python_profiling
 
 	# torch.manual_seed(SEED)
 	np.random.seed(SEED)
