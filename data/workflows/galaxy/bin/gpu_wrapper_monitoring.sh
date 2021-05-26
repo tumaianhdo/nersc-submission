@@ -16,7 +16,7 @@ module load craype-haswell
 export CRAYPE_LINK_TYPE=dynamic
 
 # NVPROF="--normalized-time-unit us --csv --log-file nvprof-${SLURM_JOBID}.csv"
-NVPROF="--normalized-time-unit us --csv --log-file ${LOG_FN}"
+NVPROF="nvprof --normalized-time-unit us --csv --log-file ${LOG_FN}"
 
 old_dir=`pwd`
 cd $PEGASUS_SCRATCH_DIR
