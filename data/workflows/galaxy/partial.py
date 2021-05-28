@@ -324,6 +324,50 @@ def run_workflow(DATA_PATH):
 							# .add_env(key="PEGASUS_TRANSFER_THREADS", value="8")	
 							# .add_env(key="NUM_GPUS", value="1")\
 							# .add_env(key="CORES_PER_GPU", value="1")\
+
+	if GPU_MONITORING:
+		gpu_wrapper = Transformation("gpu_wrapper", site="cori", pfn="https://raw.githubusercontent.com/tumaianhdo/nersc-submission/main/data/workflows/galaxy/bin/gpu_wrapper_monitoring.sh", is_stageable=True)\
+								.add_pegasus_profile(
+									# cores="2",
+									# ppn="",
+									runtime="7200",
+									queue="@escori"
+									# exitcode_success_msg="End of program",
+									# glite_arguments="--constraint=gpu --gpus=1 --ntasks=1 --cpus-per-task=1 --gpus-per-task=1 --hint=nomultithread"
+								)\
+								.add_env(key="USER_HOME", value="${NERSC_USER_HOME}")
+								# .add_profiles(Namespace.PEGASUS, key="transfer.threads", value="8")\
+								# .add_env(key="PEGASUS_TRANSFER_THREADS", value="8")	
+								# .add_env(key="NUM_GPUS", value="1")\
+								# .add_env(key="CORES_PER_GPU", value="1")\
+
+	elif PYTHON_PROFILING:
+		wrapper = Transformation("wrapper", site="cori", pfn="https://raw.githubusercontent.com/tumaianhdo/nersc-submission/main/data/workflows/galaxy/bin/wrapper_python_profile.sh", is_stageable=True)\
+								.add_pegasus_profile(
+									cores="1",
+									runtime="1800",
+									# exitcode_success_msg="End of program",
+									glite_arguments="--qos=debug --constraint=haswell --licenses=SCRATCH",
+									grid_start="NoGridStart"
+								)\
+								.add_env(key="USER_HOME", value="${NERSC_USER_HOME}")
+								# .add_profiles(Namespace.PEGASUS, key="transfer.threads", value="8")\
+								# .add_env(key="PEGASUS_TRANSFER_THREADS", value="8")	
+
+		gpu_wrapper = Transformation("gpu_wrapper", site="cori", pfn="https://raw.githubusercontent.com/tumaianhdo/nersc-submission/main/data/workflows/galaxy/bin/gpu_wrapper_python_profile.sh", is_stageable=True)\
+								.add_pegasus_profile(
+									# cores="2",
+									# ppn="",
+									runtime="7200",
+									queue="@escori"
+									# exitcode_success_msg="End of program",
+									# glite_arguments="--constraint=gpu --gpus=1 --ntasks=1 --cpus-per-task=1 --gpus-per-task=1 --hint=nomultithread"
+								)\
+								.add_env(key="USER_HOME", value="${NERSC_USER_HOME}")
+								# .add_profiles(Namespace.PEGASUS, key="transfer.threads", value="8")\
+								# .add_env(key="PEGASUS_TRANSFER_THREADS", value="8")	
+								# .add_env(key="NUM_GPUS", value="1")\
+								# .add_env(key="CORES_PER_GPU", value="1")\
 							
 
 	# Data Aqusition: Create Dataset
@@ -391,12 +435,10 @@ def run_workflow(DATA_PATH):
 	# 					.add_outputs(*output_aug_class_3)
 
 	# Job HPO
-	
-
 	best_params_file = File("best_vgg16_hpo_params.txt")
 	hpo_logdb_fn = "log_db"
 	hpo_logdb_file = File(hpo_logdb_fn)
-	
+
 	gpu_slurm_flags = "--constraint=gpu --gpus="+str(NUM_WORKERS)+" --ntasks="+str(NUM_WORKERS)+" --cpus-per-task="+str(CORES_PER_GPU)+" --gpus-per-task=1 --hint=nomultithread"
 	trials_per_worker = TRIALS // NUM_WORKERS
 	job_vgg16_hpo = Job(gpu_wrapper)\
@@ -411,8 +453,7 @@ def run_workflow(DATA_PATH):
 						# .add_profiles(Namespace.PEGASUS, key="maxwalltime", value="360")\
 						# .add_profiles(Namespace.ENV, key="EXTRA_ARGS", value="--output=" + hpo_log_fn)
 
-
-	# # Job train model
+	# Job train model
 	gpu_slurm_flags = "--constraint=gpu --gpus=1 --ntasks=1 --cpus-per-task="+str(CORES_PER_GPU)+" --gpus-per-task=1 --hint=nomultithread"
 	job_train_model = Job(gpu_wrapper)\
 						.add_args("{} --epochs {} --batch_size {}".format(vgg16_train_fn, EPOCHS, BATCH_SIZE))\
@@ -428,8 +469,7 @@ def run_workflow(DATA_PATH):
 						# .add_profiles(Namespace.PEGASUS, key="maxwalltime", value="120")\
 						
 
-
-	# # Job eval
+	# Job eval
 	gpu_slurm_flags = "--constraint=gpu --gpus=1 --ntasks=1 --cpus-per-task="+str(CORES_PER_GPU)+" --gpus-per-task=1 --hint=nomultithread"
 	job_eval_model = Job(gpu_wrapper)\
 						.add_args(vgg16_eval_fn)\
@@ -442,12 +482,36 @@ def run_workflow(DATA_PATH):
 						.add_profiles(Namespace.ENV, key="CORES_PER_GPU", value=str(CORES_PER_GPU))
 						# .add_profiles(Namespace.PEGASUS, key="runtime", value="7200")\
 						# .add_profiles(Namespace.PEGASUS, key="maxwalltime", value="120")\
-						
+
+	if GPU_MONITORING:
+		hpo_log_fn = "nvprof-hpo.csv"
+		train_log_fn = "nvprof-train.csv"
+		eval_log_fn = "nvprof-eval.csv"
+	elif PYTHON_PROFILING:
+		hpo_log_fn = "hpo.pstats"
+		train_log_fn = "train.pstats"
+		eval_log_fn = "eval.pstats"
+	if GPU_MONITORING or PYTHON_PROFILING:
+		hpo_log_file = File(hpo_log_fn)
+		train_log_file = File(train_log_fn)
+		eval_log_file = File(eval_log_fn)
+
+		job_vgg16_hpo = job_vgg16_hpo\
+						.add_outputs(hpo_log_file)\
+						.add_profiles(Namespace.ENV, key="LOG_FN", value=hpo_log_fn)
+
+		job_train_model = job_train_model\
+						.add_outputs(train_log_file)\
+						.add_profiles(Namespace.ENV, key="LOG_FN", value=train_log_fn)
+
+		job_eval_model = job_eval_model\
+						.add_outputs(eval_log_file)\
+						.add_profiles(Namespace.ENV, key="LOG_FN", value=eval_log_fn)
 
 
 	## ADD JOBS TO THE WORKFLOW
 	# wf.add_jobs(job_create_dataset, *job_preprocess_images, job_augment_class_2 ,job_augment_class_3, job_vgg16_hpo, job_train_model, job_eval_model)
-	wf.add_jobs(job_vgg16_hpo)
+	wf.add_jobs(job_vgg16_hpo, job_train_model)
 	# wf.add_dependency(job_create_dataset, children=job_preprocess_images)
 	# wf.add_jobs(job_create_dataset,
 	# 			*job_preprocess_images,job_augment_class_2 ,job_augment_class_3, job_vgg16_hpo,\
@@ -483,13 +547,15 @@ def main():
 	global MAXTIMEWALL
 	global CORES_PER_GPU
 	global NUM_PREPROCESSORS
+	global GPU_MONITORING
+	global PYTHON_PROFILING
 
 	
 	parser = argparse.ArgumentParser(description="Galaxy Classification")   
 	parser.add_argument('--batch_size', type=int, default=32, help='batch size for training')
 	parser.add_argument('--seed', type=int, default=10, help='select seed number for reproducibility')
-	parser.add_argument('--data_path', type=str, default='preprocessed_dev_data/',help='path to dataset ')
-	# parser.add_argument('--data_path', type=str, default='preprocessed_full_data/',help='path to dataset ')
+	# parser.add_argument('--data_path', type=str, default='preprocessed_dev_data/',help='path to dataset ')
+	parser.add_argument('--data_path', type=str, default='preprocessed_full_data/',help='path to dataset ')
 	parser.add_argument('--num_class_2', type=int, default= 3, help = "number of augmented class 2 files")
 	parser.add_argument('--num_class_3', type=int, default= 4, help = "number of augmented class 3 files")
 	# parser.add_argument('--data_path', type=str, default='full_galaxy_data/',help='path to dataset ')
@@ -502,7 +568,10 @@ def main():
 	parser.add_argument('--maxwalltime', type=int, default= 120, help = "maxwalltime")
 	parser.add_argument('--cores_per_gpu', type=int, default= 5, help = "Number of physical cores per GPU")
 
-	
+	# These two options cannot be used together
+	monitoring = parser.add_mutually_exclusive_group()
+	monitoring.add_argument('--gpu-monitoring', dest='gpu_monitoring', action='store_true', help='Activate GPU monitoring with Nvprof for tasks using GPUs')
+	monitoring.add_argument('--python-profiling', dest='python_profiling', action='store_true', help='Activate Python profiling with cProfile module for ALL Python jobs')	
 
 
 	ARGS        = parser.parse_args()
@@ -517,6 +586,8 @@ def main():
 	NUM_CLASS_3 = ARGS.num_class_3
 	MAXTIMEWALL = ARGS.maxwalltime
 	CORES_PER_GPU = ARGS.cores_per_gpu
+	GPU_MONITORING    = ARGS.gpu_monitoring
+	PYTHON_PROFILING  = ARGS.python_profiling
 
 
 	# torch.manual_seed(SEED)
