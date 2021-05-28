@@ -366,7 +366,7 @@ def run_workflow(DATA_PATH):
 	# 								pfn = str(Path(".").parent.resolve() / "bin/eval_model_vgg16.py"), 
 	# 								is_stageable= True)
 
-	tc.add_transformations(pegasus_transfer, pegasus_dirmanager, pegasus_cleanup, system_chmod, wrapper, gpu_wrapper, gpu_wrapper_monitoring, gpu_wrapper_python_profile)
+	tc.add_transformations(pegasus_transfer, pegasus_dirmanager, pegasus_cleanup, system_chmod, wrapper, gpu_wrapper)
 	# tc.add_transformations(
 	# 	create_dataset,
 	# 	preprocess_images,
