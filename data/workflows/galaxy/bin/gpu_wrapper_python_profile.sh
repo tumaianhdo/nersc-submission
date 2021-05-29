@@ -21,8 +21,12 @@ MONITORING="-m cProfile -o ${LOG_FN}"
 old_dir=`pwd`
 cd $PEGASUS_SCRATCH_DIR
 
+NMGPUS=${NUM_GPUS}
+if [ "${NUM_GPUS}" -gt 8 ]; then
+    NMGPUS=8
+fi
 GPU_STRING="0"
-for (( i=1; i<${NUM_GPUS}; i++ )); do
+for (( i=1; i<${NMGPUS}; i++ )); do
     GPU_STRING+=",${i}"
 done
 cmd="srun -G ${NUM_GPUS} -n ${NUM_GPUS} --cpus-per-task=${CORES_PER_GPU} --gpus-per-task=1 --gpu-bind=map_gpu:${GPU_STRING} --hint=nomultithread ${EXTRA_ARGS} python ${MONITORING} $@"
