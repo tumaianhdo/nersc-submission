@@ -73,7 +73,8 @@ def get_arguments():
     parser.add_argument('--seed', type=int, default=123, help='select seed number for reproducibility')
     parser.add_argument('--root_path', type=str, default='./data',help='path to dataset ')
     parser.add_argument('--save', type=str, default = REL_PATH + 'checkpoints/vgg16_galaxy/',help='path to checkpoint save directory ')
-    parser.add_argument('--epochs', type=int,default=1, help = "number of training epochs")   
+    parser.add_argument('--epochs', type=int,default=1, help = "number of training epochs")
+    parser.add_argument('--best_params', type=str, default='best_vgg16_hpo_params.txt',help='file containing best hyperparameters')   
     args = parser.parse_args()
     
     return args
@@ -380,8 +381,9 @@ def main():
 
     BATCH_SIZE = ARGS.batch_size
     EPOCHS     = ARGS.epochs
+    BEST_PARAMS = ARGS.best_params
     
-    f = open("best_vgg16_hpo_params.txt").read()
+    f = open(BEST_PARAMS).read()
     
     best_params = eval(f)
     best_params = best_params["params"]
