@@ -104,7 +104,7 @@ class GalaxyDataset(Dataset):
             sample = self.cached_data[idx]    
         if self.transform:
             sample = self.transform(sample)
-        if self.prefix == "train":
+        if self.prefix == "train" or self.prefix == "trainval":
             sample["image"] = self.train_transforms(sample["image"])
 
         return sample
