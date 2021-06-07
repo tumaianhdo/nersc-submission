@@ -15,6 +15,7 @@ module load craype-haswell
 # Dynamic linking
 export CRAYPE_LINK_TYPE=dynamic
 
+LOG_OUTPUT="--output=${LOG_FN}%t"
 # MONITORING="-m cProfile -o ${SLURM_JOBID}.pstats"
 MONITORING="-m cProfile -o ${LOG_FN}${SLURM_PROCID}"
 
@@ -29,7 +30,7 @@ GPU_STRING="0"
 for (( i=1; i<${NMGPUS}; i++ )); do
     GPU_STRING+=",${i}"
 done
-cmd="srun -G ${NUM_GPUS} -n ${NUM_GPUS} --cpus-per-task=${CORES_PER_GPU} --gpus-per-task=1 --gpu-bind=map_gpu:${GPU_STRING} --hint=nomultithread ${EXTRA_ARGS} python ${MONITORING} $@"
+cmd="srun -G ${NUM_GPUS} -n ${NUM_GPUS} --cpus-per-task=${CORES_PER_GPU} --gpus-per-task=1 --gpu-bind=map_gpu:${GPU_STRING} --hint=nomultithread ${LOG_OUTPUT} ${EXTRA_ARGS} python ${MONITORING} $@"
 echo ${cmd} 
 start=$SECONDS
 ${cmd}
