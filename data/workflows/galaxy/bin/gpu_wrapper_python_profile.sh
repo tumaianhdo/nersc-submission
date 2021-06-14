@@ -17,7 +17,7 @@ export CRAYPE_LINK_TYPE=dynamic
 
 LOG_OUTPUT="--output=${LOG_FN}%t"
 # MONITORING="-m cProfile -o ${SLURM_JOBID}.pstats"
-MONITORING="-m cProfile -o ${LOG_FN}${SLURM_PROCID}"
+MONITORING="-m cProfile -o ${PROFILE_FN}${SLURM_PROCID}"
 
 old_dir=`pwd`
 cd $PEGASUS_SCRATCH_DIR
